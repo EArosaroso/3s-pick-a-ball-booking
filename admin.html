@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3S Pick-A-Ball - Admin Dashboard</title>
+    <style>
+        :root {
+            --bg-dark: #07090e;
+            --panel-bg: rgba(18, 22, 30, 0.92);
+            --panel-border: rgba(0, 255, 136, 0.25);
+            --primary-glow: #00ff88;
+            --accent-cyan: #00d2ff;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-rose: #ff3b30;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        @media (min-width: 640px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px 25px;
+            }
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #fff 30%, var(--primary-glow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 15px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        @media (min-width: 640px) {
+            .controls-panel {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .search-group {
+                flex-direction: row;
+                flex: 1;
+            }
+        }
+
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            background: rgba(10, 14, 20, 0.9);
+            color: var(--text-main);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        /* MAKES ENTIRE DATE FIELD CLICKABLE TO OPEN CALENDAR */
+        input[type="date"] {
+            cursor: pointer;
+            position: relative;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+
+        button {
+            background: var(--primary-glow);
+            color: #030712;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            button { width: auto; }
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-action {
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .btn-danger {
+            background: rgba(255, 59, 48, 0.15);
+            border: 1px solid var(--accent-rose);
+            color: var(--accent-rose);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .table-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        th {
+            background: rgba(0, 255, 136, 0.05);
+            color: var(--primary-glow);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- MOBILE CARD VIEW MATRIX --- */
+        @media (max-width: 767px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead { display: none; }
+
+            tr {
+                margin: 12px;
+                padding: 14px;
+                border: 1px solid rgba(0, 255, 136, 0.2);
+                border-radius: 12px;
+                background: rgba(10, 14, 20, 0.6);
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            }
+
+            td:last-child {
+                border-bottom: none;
+                padding-top: 12px;
+                flex-direction: row;
+                gap: 8px;
+            }
+
+            td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+            }
+        }
+
+        .badge-slot {
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 15px;
+        }
+
+        .modal-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 20px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            height: 220px;
+            background: rgba(10, 14, 20, 0.9);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--accent-cyan);
+            font-family: monospace;
+            padding: 12px;
+            border-radius: 8px;
+            resize: none;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>3S Pick-A-Ball — Admin Dashboard</h1>
+        <button onclick="fetchBookings()">🔄 Refresh List</button>
+    </header>
+
+    <div class="controls-panel">
+        <div class="search-group">
+            <input type="text" id="searchInput" placeholder="Search name, code, ref..." onkeyup="filterTable()">
+            <input type="date" id="dateFilter" onchange="filterTable()" onclick="if(this.showPicker) this.showPicker()">
+        </div>
+        <button style="background: rgba(255,255,255,0.1); color: #fff;" onclick="clearFilters()">Reset Filters</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ref Code</th>
+                    <th>Date</th>
+                    <th>Time Slot</th>
+                    <th>Customer Name</th>
+                    <th>Contact Info</th>
+                    <th>Payment Ref</th>
+                    <th>Total Fee</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="bookingTableBody">
+                <tr><td colspan="8" class="no-records">Loading bookings from Supabase...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+        <h3 style="margin-top:0; color:var(--primary-glow); font-size: 1.1rem;">📱 Customer Confirmation Preview</h3>
+        <textarea id="confirmText" readonly></textarea>
+        <div style="display:flex; gap:10px; flex-direction: column;">
+            <button onclick="copyToClipboard()">📋 Copy & Send to Customer</button>
+            <button style="background:rgba(255,255,255,0.1); color:#fff;" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://sbepvxarglghtfskrcve.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiZXB2eGFyZ2xnaHRmc2tyY3ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0NjI2OTQsImV4cCI6MjEwMzAzODY5NH0.qNjxhCSsOSRGBkfhlPy7Er4SF1WsygcmuaJCnhVqwVA';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allBookings = [];
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    function formatDateDisplay(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        return `${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    }
+
+    function formatTime(h) {
+        const period = h >= 12 ? 'PM' : 'AM';
+        const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+        return `${displayH}:00 ${period}`;
+    }
+
+    async function fetchBookings() {
+        const tbody = document.getElementById('bookingTableBody');
+        tbody.innerHTML = '<tr><td colspan="8" class="no-records">Fetching data...</td></tr>';
+
+        const { data, error } = await supabaseClient
+            .from('bookings')
+            .select('*')
+            .order('booking_date', { ascending: false })
+            .order('slot_hour', { ascending: true });
+
+        if (error) {
+            console.error("Error fetching bookings:", error);
+            tbody.innerHTML = `<tr><td colspan="8" class="no-records" style="color:var(--accent-rose);">Error loading data: ${error.message}</td></tr>`;
+            return;
+        }
+
+        allBookings = data || [];
+        renderTable(allBookings);
+    }
+
+    function renderTable(dataList) {
+        const tbody = document.getElementById('bookingTableBody');
+        tbody.innerHTML = '';
+
+        if (dataList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="no-records">No booking records found.</td></tr>';
+            return;
+        }
+
+        dataList.forEach(item => {
+            const baseCode = item.booking_code ? item.booking_code.split('-')[0] + '-' + item.booking_code.split('-')[1] : '-';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="Ref Code"><strong>${baseCode}</strong></td>
+                <td data-label="Date">${item.booking_date}</td>
+                <td data-label="Time Slot"><span class="badge-slot">${formatTime(item.slot_hour)} - ${formatTime(item.slot_hour + 1)}</span></td>
+                <td data-label="Customer">${item.full_name}</td>
+                <td data-label="Contact">
+                    <div style="text-align: right;">📞 ${item.phone}</div>
+                </td>
+                <td data-label="Payment Ref" style="font-family:monospace; color:var(--accent-cyan);">${item.payment_ref}</td>
+                <td data-label="Total Fee"><strong>₱${item.total_fee || 0}</strong></td>
+                <td>
+                    <button class="btn-action" onclick="generateConfirmation('${item.payment_ref}', '${item.phone}')">📱 Confirmation</button>
+                    <button class="btn-danger" onclick="deleteBooking('${item.id}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function generateConfirmation(paymentRef, phone) {
+        const matchingSlots = allBookings.filter(b => b.payment_ref === paymentRef && b.phone === phone);
+
+        if (matchingSlots.length === 0) return alert('No booking details found.');
+
+        matchingSlots.sort((a, b) => a.slot_hour - b.slot_hour);
+
+        const firstItem = matchingSlots[0];
+        const baseCode = firstItem.booking_code.split('-')[0] + '-' + firstItem.booking_code.split('-')[1];
+        const timeStr = matchingSlots.map(b => `${formatTime(b.slot_hour)}-${formatTime(b.slot_hour + 1)}`).join(', ');
+
+        const confirmationMsg = `✅ [3S PICK-A-BALL BOOKING CONFIRMED]\nRef Code: ${baseCode}\nName: ${firstItem.full_name}\nDate: ${formatDateDisplay(firstItem.booking_date)}\nSlots: ${timeStr}\nAmount Paid: ₱${firstItem.total_fee} (Txn Ref: ${firstItem.payment_ref})\nAccount Paid To: MariBank (CHEARLIM CANEDA)\nCourt: 3S Pick a ball,\nStatus: CONFIRMED & RESERVED 🎉\n\nThank you for playing with us! See you at the court!`;
+
+        document.getElementById('confirmText').value = confirmationMsg;
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('confirmText').value;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Confirmation message copied to clipboard!');
+            closeModal();
+        }).catch(err => {
+            alert('Failed to copy message.');
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    function filterTable() {
+        const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+        const dateVal = document.getElementById('dateFilter').value;
+
+        const filtered = allBookings.filter(item => {
+            const matchesSearch = 
+                !searchVal ||
+                (item.full_name && item.full_name.toLowerCase().includes(searchVal)) ||
+                (item.booking_code && item.booking_code.toLowerCase().includes(searchVal)) ||
+                (item.payment_ref && item.payment_ref.toLowerCase().includes(searchVal)) ||
+                (item.phone && item.phone.includes(searchVal));
+
+            // Clean ISO string format (YYYY-MM-DD)
+            let itemDate = '';
+            if (item.booking_date) {
+                itemDate = item.booking_date.split('T')[0].trim();
+            }
+
+            const matchesDate = !dateVal || itemDate === dateVal;
+
+            return matchesSearch && matchesDate;
+        });
+
+        renderTable(filtered);
+    }
+
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('dateFilter').value = '';
+        renderTable(allBookings);
+    }
+
+    async function deleteBooking(id) {
+        if (!confirm('Are you sure you want to cancel and remove this booking slot?')) return;
+
+        const { error } = await supabaseClient
+            .from('bookings')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            alert(`Failed to delete: ${error.message}`);
+        } else {
+            fetchBookings();
+        }
+    }
+
+    window.onload = fetchBookings;
+</script>
+</body>
+</html>
